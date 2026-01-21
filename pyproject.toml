@@ -13,7 +13,8 @@ authors = [
 ]
 readme = "README.md"
 license = "MIT"
-requires-python = ">=3.11,<4.0"
+# TODO, ray only supports up to python 3.13 as of 2026-01-20
+requires-python = ">=3.11,<3.14"
 dynamic = ["version"]
 
 # https://pypi.org/classifiers/
@@ -29,7 +30,6 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
-    "Programming Language :: Python :: 3.14",
     "Typing :: Typed",
     # Include this to avoid accidentally publishing to PyPI:
     # "Private :: Do Not Upload",
