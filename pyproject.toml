@@ -7,7 +7,7 @@ Repository = "https://github.com/duoan/mega-taxonomy"
 
 [project]
 name = "mega-taxonomy"
-description = "Hierarchical Semantic Indexing for the Multimodal"
+description = "Mega Scale Hierarchical Semantic Indexing for the Multimodal"
 authors = [
     { name="Victor An", email="victor.duo.an@gmail.com" },
 ]
@@ -39,6 +39,10 @@ classifiers = [
 # ---- Main dependencies ----
 
 dependencies = [
+    "fsspec>=2026.1.0",
+    "ray[default]>=2.53.0",
+    "torch>=2.9.1",
+    "triton>=3.5.1",
 ]
 
 
@@ -81,8 +85,8 @@ style = "pep440"
 bump = true
 
 [tool.hatch.build.targets.wheel]
-# The source location for the package.
-packages = ["src/mega_taxonomy"]
+# The source location for the package (flat layout).
+packages = ["mega_taxonomy"]
 
 
 # ---- Settings ----
@@ -134,7 +138,7 @@ ignore = [
 # than mypy and with a good extension for VSCode/Cursor.
 # https://marketplace.visualstudio.com/items?itemName=detachhead.basedpyright
 # https://docs.basedpyright.com/latest/configuration/config-files/#sample-pyprojecttoml-file
-include = ["src", "tests", "devtools"]
+include = ["mega_taxonomy", "tests", "devtools"]
 # By default BasedPyright is very strict, so you almost certainly want to disable
 # some of the rules.
 # First, these turn off warnings about (yes) how you ignore warnings:
@@ -166,7 +170,7 @@ python_files = ["*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 testpaths = [
-    "src",
+    "mega_taxonomy",
     "tests",
 ]
 norecursedirs = []
