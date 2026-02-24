@@ -113,3 +113,89 @@ For instructions on publishing to PyPI, see [publishing.md](docs/publishing.md).
 
 *This project was built from
 [simple-modern-uv](https://github.com/jlevy/simple-modern-uv).*
+
+## C++ IndexFlatL2 (Route-B)
+
+This repository now includes a cross-platform C++ `IndexFlatL2` implementation under:
+
+- `include/indexflat.h`
+- `src/common`, `src/cpu`, `src/cuda`, `src/metal`
+- `tests/test_indexflat.cpp`
+- `bench/bench_indexflat.cpp`
+
+Key property: search uses fused streaming with on-the-fly top-k and never materializes a full `[Q, N]` distance matrix.
+
+### Build (Linux, CPU + optional CUDA)
+
+```bash
+cmake -S . -B build \
+  -DINDEXFLAT_ENABLE_CUDA=ON \
+  -DINDEXFLAT_ENABLE_OPENMP=ON \
+  -DINDEXFLAT_ENABLE_METAL=OFF
+cmake --build build -j
+ctest --test-dir build --output-on-failure
+```
+
+If your CUDA toolkit is not installed, set `-DINDEXFLAT_ENABLE_CUDA=OFF`.
+
+### Build (macOS, CPU + optional Metal)
+
+```bash
+cmake -S . -B build \
+  -DINDEXFLAT_ENABLE_METAL=ON \
+  -DINDEXFLAT_ENABLE_CUDA=OFF \
+  -DINDEXFLAT_ENABLE_OPENMP=ON
+cmake --build build -j
+ctest --test-dir build --output-on-failure
+```
+
+### SIMD / compiler flags
+
+- x86 builds compile with `-mavx2 -mfma` by default.
+- AVX-512 path is runtime-detected and compiled when compiler/toolchain supports it.
+- Apple Silicon NEON path uses `arm_neon.h` intrinsics.
+- CUDA architectures default to `75;80;86;89;90` (override with `CMAKE_CUDA_ARCHITECTURES`).
+
+### Benchmark CLI
+
+```bash
+./build/bench_indexflat --q 128 --n 1000000 --d 768 --k 10 --dtype fp32 --backend auto --block-n 256
+```
+
+Useful presets:
+
+- `--q 128 --n 1000000 --d 768 --k 10`
+- `--q 128 --n 10000000 --d 768 --k 10` (if memory allows)
+
+The CLI prints average latency, QPS, estimated bandwidth, and estimated GFLOP/s.
+
+### Python wrapper (PyTorch C++ extension)
+
+Build shared C API library first:
+
+```bash
+cmake -S . -B build-cpp-omp \
+  -DINDEXFLAT_ENABLE_CUDA=OFF \
+  -DINDEXFLAT_ENABLE_METAL=ON \
+  -DINDEXFLAT_ENABLE_OPENMP=ON \
+  -DOpenMP_CXX_FLAGS="-Xclang -fopenmp -I/opt/homebrew/opt/libomp/include" \
+  -DOpenMP_CXX_LIB_NAMES=omp \
+  -DOpenMP_omp_LIBRARY=/opt/homebrew/opt/libomp/lib/libomp.dylib
+cmake --build build-cpp-omp -j
+```
+
+Then use Python API:
+
+```python
+import torch
+from mega_taxonomy.indexflat import IndexFlatL2, BACKEND_CPU
+
+dim = 128
+index = IndexFlatL2(dim)
+xb = torch.randn(10000, dim, dtype=torch.float32)
+xq = torch.randn(16, dim, dtype=torch.float32)
+index.add(xb)
+dists, ids = index.search(xq, k=10, backend=BACKEND_CPU, num_threads=8)
+```
+
+The Python module compiles a local PyTorch C++ extension (`torch.utils.cpp_extension.load`) that links to `libindexflat_c`.

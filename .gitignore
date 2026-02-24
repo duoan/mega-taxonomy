@@ -17,6 +17,8 @@ __pycache__/
 # Distribution / packaging
 .Python
 build/
+build-cpp/
+build-cpp-omp/
 develop-eggs/
 dist/
 downloads/
@@ -167,6 +169,12 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+# Torch extension caches/artifacts
+*.dylib
+*.dSYM/
+mega_taxonomy/indexflat/__pycache__/
+**/torch_ext/
 
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
