@@ -175,6 +175,8 @@ cython_debug/
 *.dSYM/
 mega_taxonomy/indexflat/__pycache__/
 **/torch_ext/
+kgen.trace.json.time-trace
+kgen.trace.json.time-events.txt
 
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
